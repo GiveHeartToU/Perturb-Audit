@@ -1,0 +1,123 @@
+# ==========================================
+# CR-Collision-Analyzer configuration file
+# ==========================================
+
+# --- Project basic settings ---
+project_name: "KLF2"
+
+# logging settings
+logging: # DEBUG, INFO, WARNING, ERROR
+  level: "INFO" # Set the logging level of console output
+  save_to_file: true # Save all logging info to a file
+
+# --- 1. Data Input Stage ---
+report1_params:
+  plot_params:
+    min_umis_sgRNA: 10
+    min_feature_umis: 3
+    top_n_purity_features: 40
+    top_n_impact_features: 40
+  report_batch_id: "A1_C1" # batch id to be included in the report title and output file names, e.g. "A1_C1"
+
+font: 'Arial' # only arial is support for reports pdf
+
+# --- 2. Cleaning Stage ---
+external_inputs:
+  cellbender:
+    enabled: True  # Set to true to evaluate CellBender outputed decontaminated matrix
+    h5_path: '/A1_C1/cellbender_denoised_FPR_0.05_filtered.h5' # "/path/to/cellbender_output_filtered.h5"
+    raw_h5_path: '/A1_C1/outs/raw_feature_bc_matrix.h5' # "/path/to/outs/raw_feature_bc_matrix.h5"
+
+cleaning_mtx:
+  min_reads_per_umi: 3
+  feature_name_col: 'name' # sgRNA "name" or "id" column in the feature reference file
+
+sgRNA_list:
+  sort_by: "total_umi" # Options: "alphabetical", "cell_count", "total_umi"
+  ascending: False
+  top_n: 30
+  min_cells: 10 # only consider sgRNAs present in at least this many cells
+  min_total_umi: 50 # only consider sgRNAs with at least this many total UMIs
+
+report2_params: # Single-feature density report
+  plot_func_params:
+    log_transform: True
+    binwidth: 0.25
+    show_kde: True
+    hist_color: "grey"
+    kde_color: "black"
+  cols: 4 # number of columns in the report grid
+
+report3_params: # Single-feature scatter report
+  plot_func_params:
+    log_transform: True
+    show_purity_lines: True
+    cmap: 'Reds'
+  cols: 4
+
+# --- 3. Assignment Stage ---
+report4_params: # Dominance Exploratory Data Analysis (EDA) Report
+  min_umi_threshold: 10 # minimum UMI threshold for CBCs inclusion in EDA. # 0 will automatically produced as well.
+
+dominance_assignment: 
+  min_umi: 10
+  min_ratio_1: 0.8
+  min_fold_diff_12: 4
+  min_fold_diff_23: 3
+  cumulative_threshold: 0.9
+
+gmm_assignment:
+  init_params:
+    min_cells: 100
+    very_few_cells: 10 # at least 2 for fit
+    force_two_peak_fit: True
+    min_peak_distance: 1.5
+    three_peak_init_means: [[3], [6], [9]]
+    posterior: 0.9 
+    n_jobs: -1 # cores for parallel processing, -1 means all available cores
+  fit_params1: # for 'strict_discard' matrices
+    global_threshold_method: 'top_n_median' # Options: 'top_n_median', 'ntc_baseline', 'force_value'
+    top_n: 10
+    force_global_min_threshold: 3
+  fit_params2: # for 'cellbender' matrices
+    global_threshold_method: 'force_value' # Suggested to use 'force_value' here, as CellBender already removes noise
+    top_n: 10
+    force_global_min_threshold: 3
+    
+non_targeting_control:
+  pattern: "NEG_CTRL" # pattern to identify NTC sgRNAs in the feature reference file
+
+report5_params: # GMM assignment report
+  cols: 5
+  keep_temp: True
+
+# --- 4. Evaluation stage ---
+evaluation_params:
+  min_total_UMI: 10
+
+strict_or_loose_gmm: "strict" # Options: "strict", "loose"
+
+# --- 5. transcriptomic impact analysis ---
+sgRNA_linker: "-" # string to link sgRNA name and target gene in the feature reference file, e.g. "KLF4-1" for sgRNA "KLF4-1" targeting gene "KLF4"
+
+transcriptomic_qc:
+  umi_pct_upper: 95 # 'total_counts_pct_upper' proportion
+  gene_pct_lower: 5 # 'n_genes_by_counts' proportion
+  mt_upper: 10.0 # 'pct_counts_mt' threshold
+
+transcriptomic_dr:
+  use_rep: "cellbender_embedding"
+  n_neighbors: 30
+  n_pcs: 30
+  leiden_resolutions: [0.3,0.5,0.8]
+  leiden_key_prefix: 'leiden_cb_res'
+
+density_params:
+  group_level: "gene" # Options: "sg"
+  assign_method: "Domin" # Options: "GMM"
+  denoised: True
+  denoise_method: "cellbender" # Options: "strict_discard"
+  min_cells_per_level: 3
+
+transcriptomic_impact:
+  group_level: "gene"

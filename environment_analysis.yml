@@ -1,0 +1,22 @@
+name: perturb_audit_env
+channels:
+  - defaults
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.7
+  - anndata=0.8.0
+  - h5py
+  - leidenalg
+  - numpy
+  - pandas
+  - python-igraph
+  - scanpy=1.9.3
+  - scipy
+  - ipykernel
+  - pyyaml
+  - pip
+  - pip:
+      - pySankey
+      - adjustText
+      - importlib_resources
