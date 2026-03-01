@@ -3,7 +3,7 @@
 # ==========================================
 
 # --- Project basic settings ---
-project_name: "KLF2"
+project_name: "your_project"
 
 # logging settings
 logging: # DEBUG, INFO, WARNING, ERROR
@@ -17,7 +17,7 @@ report1_params:
     min_feature_umis: 3
     top_n_purity_features: 40
     top_n_impact_features: 40
-  report_batch_id: "A1_C1" # batch id to be included in the report title and output file names, e.g. "A1_C1"
+  report_batch_id: "your_batch_id" # batch id to be included in the report title and output file names, e.g. "A1_C1"
 
 font: 'Arial' # only arial is support for reports pdf
 
@@ -25,8 +25,8 @@ font: 'Arial' # only arial is support for reports pdf
 external_inputs:
   cellbender:
     enabled: True  # Set to true to evaluate CellBender outputed decontaminated matrix
-    h5_path: '/A1_C1/cellbender_denoised_FPR_0.05_filtered.h5' # "/path/to/cellbender_output_filtered.h5"
-    raw_h5_path: '/A1_C1/outs/raw_feature_bc_matrix.h5' # "/path/to/outs/raw_feature_bc_matrix.h5"
+    h5_path: '/cellbender_denoised_FPR_0.05_filtered.h5' # "/path/to/cellbender_output_filtered.h5"
+    raw_h5_path: '/outs/raw_feature_bc_matrix.h5' # "/path/to/outs/raw_feature_bc_matrix.h5"
 
 cleaning_mtx:
   min_reads_per_umi: 3
