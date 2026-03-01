@@ -110,11 +110,11 @@ Each subfolder stores figures, PDF reports, and intermediate CSVs for that stage
 - Modules under `cr_analyzer/analysis_core` and `cr_analyzer/visualization` implement the heavy lifting (data loaders, matrix builders, collision detectors, GMM helpers, plotters).
 - Configurable fonts and plotting styles ensure publication-ready visuals (`visualization/plotter.py`).
 
-If you need module-level details, refer to `cr_analyzer/runner.py` for the full execution chain.
+If you need module-level details, refer to `cr_analyzer/runner.py` or `test.ipynb` for the full module-execution chain.
 
 ## Testing & validation
 
-There is no automated test suite yet, but `test.ipynb` document validation scenarios you used to inspect each module. Keeping those notebooks up to date with sample inputs helps future users reproduce the validation steps.
+no automated test suite yet
 
 ## Next Steps
 ...
