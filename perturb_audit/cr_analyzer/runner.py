@@ -260,6 +260,57 @@ class CollisionRunner:
                             raw_h5=self.cfg['external_inputs']['cellbender']['raw_h5_path'],
                             cb_h5=self.cfg['external_inputs']['cellbender']['h5_path']
                         )
+
+                        # Diff in barcode calls and take intersection for fair comparison
+                        self.logger.info(f"Barcodes in cellbender calls: {len(self.external['adata_cb'].obs_names)}, Barcodes out of cellranger calls: {len(self.barcode_df)}")
+                        inter_barcodes = set(self.external['adata_cb'].obs_names).intersection(set(self.barcode_df['barcode']))
+                        self.logger.info(f"Using intersecting barcodes: {len(inter_barcodes)}")
+
+                        # update strict_discard matrices to use 
+                        # the same CBC intersection as the external adata_cb
+                        def _subset_mtx_to_intersection(mtx, inter_barcodes_set):
+                            """
+                            Subset a matrix to the barcodes that are in inter_barcodes_set.
+
+                            Assumes the matrix has an attribute `.barcode_names`
+                            which is index‑aligned to its rows.
+                            """
+                            if mtx is None or not hasattr(mtx, "barcode_names") or not hasattr(mtx, "feature_names"):
+                                return mtx
+
+                            keep_idx = [
+                                i for i, bc in enumerate(mtx.barcode_names)
+                                if bc in inter_barcodes_set
+                            ]
+                            if not keep_idx:
+                                return mtx  # nothing to keep; return as‑is or handle upstream
+
+                            keep_idx = np.array(keep_idx, dtype=int)
+                            mtx_sub = mtx[keep_idx, :]
+                            mtx_sub.barcode_names = [mtx.barcode_names[i] for i in keep_idx]
+                            mtx_sub.feature_names = mtx.feature_names  # features remain unchanged
+                            return mtx_sub
+
+                        inter_barcodes_set = set(inter_barcodes)
+                        for key in ['raw_sg', 'clean_sg', 'clean_sg_aligned',
+                                    'raw_gex', 'clean_gex']:
+                            self.datasets['strict_discard'][key] = _subset_mtx_to_intersection(
+                                self.datasets['strict_discard'][key],
+                                inter_barcodes_set
+                            )
+                        self.datasets['strict_discard']['clean_sg_aligned'] = align_sparse_matrix(
+                            target_matrix=self.datasets['strict_discard']['clean_sg'],
+                            reference_matrix=self.datasets['strict_discard']['raw_sg']
+                        )
+                        self.logger.info(f"A. Strict Discard matrices subsetted to intersecting barcodes with CellBender. "
+                                            f"\nRaw sgRNA matrix shape: {self.datasets['strict_discard']['raw_sg'].shape}, "
+                                            f"Cleaned sgRNA matrix shape: {self.datasets['strict_discard']['clean_sg'].shape}, "
+                                            f"Aligned cleaned sgRNA matrix shape: {self.datasets['strict_discard']['clean_sg_aligned'].shape}, "
+                                            f"Raw GEX matrix shape: {self.datasets['strict_discard']['raw_gex'].shape}, "
+                                            f"Cleaned GEX matrix shape: {self.datasets['strict_discard']['clean_gex'].shape}.")
+                        
+                        # update cellbender adata
+                        self.external['adata_cb'] = self.external['adata_cb'][self.external['adata_cb'].obs_names.isin(inter_barcodes)].copy()
                         self.datasets['cellbender']['raw_sg'] = generate_count_matrix_from_adata(
                             self.external['adata_cb'], feature_name_col='gene_id', 
                             feature_type='CRISPR Guide Capture', layer='raw')
@@ -334,6 +385,7 @@ class CollisionRunner:
                 plot_func_kwargs=dic_desity_raw,
                 report_path=os.path.join(single_feature_dir, 'raw_sgRNA_density', 'single_feature_density_plots_raw.pdf'),
                 cols=self.cfg['report2_params']['cols'],
+                keep_temp=self.cfg['report2_params']['keep_temp'],
             )
 
             dic_desity_clean = {"sgRNA_matrix": clean_sg}
@@ -344,6 +396,7 @@ class CollisionRunner:
                 plot_func_kwargs=dic_desity_clean,
                 report_path=os.path.join(single_feature_dir, 'cleaned_sgRNA_density', 'single_feature_density_plots_cleaned.pdf'),
                 cols=self.cfg['report2_params']['cols'],
+                keep_temp=self.cfg['report2_params']['keep_temp'],
             )
             self.logger.info("Single-feature density plots generated successfully.")
 
@@ -364,6 +417,7 @@ class CollisionRunner:
                 plot_func_kwargs=dic_scatter,
                 report_path=os.path.join(single_feature_dir, 'sgRNA_scatter', 'single_feature_scatter_plots.pdf'),
                 cols=self.cfg['report3_params']['cols'],
+                keep_temp=self.cfg['report3_params']['keep_temp'],
             )
             self.logger.info("Single-feature reports generated successfully.")
 

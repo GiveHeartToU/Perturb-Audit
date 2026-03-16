@@ -208,18 +208,53 @@ class GMMAssigner:
         
         logger.debug("GMM Fitting completed.")
 
+    # def _calculate_global_min_threshold(self, matrix, feature_names, ntc_features, method, top_n, force_value):
+    #     """
+    #     if method == 'force_value': return log2(force_value + 1).
+    #     Otherwise, Calculate global threshold M based on top features or NTCs.
+    #     if calculated threshold < log2(force_value + 1), use log2(force_value + 1).
+    #     """
+    #     if method == 'ntc_baseline' and ntc_features is not None:
+    #         ref_indices = [i for i, name in enumerate(feature_names) if name in ntc_features]
+    #     elif method == 'top_n_median' and top_n > 0:
+    #         total_counts = np.array(matrix.sum(axis=0)).flatten()
+    #         ref_indices = np.argsort(total_counts)[::-1][:top_n]
+    #     elif method == 'force_value':
+    #         return np.log2(force_value + 1)
+
+    #     ref_thresholds = []
+    #     for idx in ref_indices:
+    #         counts = matrix[:, idx].toarray().flatten()
+    #         res = self._fit_single_feature(feature_names[idx], counts, global_min_threshold=None)
+    #         if res['thresholds']:
+    #             ref_thresholds.append(res['thresholds'][0])
+
+    #     threshold = np.median(ref_thresholds) if ref_thresholds else 1.0
+    #     return max(threshold, np.log2(force_value + 1))
+
     def _calculate_global_min_threshold(self, matrix, feature_names, ntc_features, method, top_n, force_value):
         """
-        if method == 'force_value': return log2(force_value + 1).
-        Otherwise, Calculate global threshold M based on top features or NTCs.
-        if calculated threshold < log2(force_value + 1), use log2(force_value + 1).
+        Fixed Robust version of global minimum threshold calculation with enhanced logic checks.
         """
-        if method == 'ntc_baseline' and ntc_features is not None:
-            ref_indices = [i for i, name in enumerate(feature_names) if name in ntc_features]
+        ref_indices = [] 
+        
+        if method == 'force_value':
+            return np.log2(force_value + 1)
+            
+        elif method == 'ntc_baseline':
+            if ntc_features is not None:
+                ref_indices = [i for i, name in enumerate(feature_names) if name in ntc_features]
+            else:
+                print("Warning: ntc_baseline selected but ntc_features is None. Falling to force_value.")
+                return np.log2(force_value + 1)
+                
         elif method == 'top_n_median' and top_n > 0:
             total_counts = np.array(matrix.sum(axis=0)).flatten()
             ref_indices = np.argsort(total_counts)[::-1][:top_n]
-        elif method == 'force_value':
+        
+        # Enhenced check for valid reference indices
+        if len(ref_indices) == 0:
+            print(f"Warning: No reference indices found for method '{method}'. Using force_value only.")
             return np.log2(force_value + 1)
 
         ref_thresholds = []

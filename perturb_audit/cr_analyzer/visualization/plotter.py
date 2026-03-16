@@ -102,7 +102,7 @@ from typing import Tuple, Optional, List
 COLOR_COLLIDING = '#f3793b'  # High saturation warm color (Orange/Red) for collision
 COLOR_BACKGROUND = '#716db2' # Low saturation cool color (Blue/Purple) for background
 COLOR_GEX = '#1d52a1'        # Deep Blue for GEX (if needed for axes/labels)
-COLOR_SGRNA = '#72c15a'      # Green for sgRNA (if needed for axes/labels)
+COLOR_SGRNA = '#E7872B'      # Green #72c15a for sgRNA (if needed for axes/labels)
 
 def set_publication_style():
     """Sets Matplotlib/Seaborn style for high-quality publication output."""

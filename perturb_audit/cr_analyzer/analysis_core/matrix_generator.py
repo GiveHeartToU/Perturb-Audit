@@ -10,7 +10,7 @@ def generate_count_matrix(
     collisions_df: Optional[pd.DataFrame] = None,
     library_id: int = 1,  # Target library index (e.g., GEX=0, sgRNA=1)
     apply_strict_discard: bool = False,
-    min_reads_per_umi: int = 3,
+    min_reads_per_umi: int = 0,
     feature_name_col: str = 'name'  # Column from feature_df to use for matrix column names
 ) -> csr_matrix:
     """
