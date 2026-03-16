@@ -12,19 +12,7 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.7"
 
-dependencies = [
-    "scanpy>=1.9.3",
-    "anndata>=0.8.0",
-    "numpy",
-    "scipy",
-    "pandas",
-    "h5py",
-    "python-igraph",
-    "leidenalg",
-    "pySankey",
-    "adjustText",
-    "pyyaml"
-]
+dependencies = []
 
 [tool.setuptools.packages.find]
 where = ["."]

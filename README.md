@@ -33,7 +33,7 @@ Perturb-Audit plugs this gap by: auditing the raw `molecule_info.h5` file for cr
 ## Installation
 
 ```
-git clone https://github.com/yourname/perturb-audit.git
+git clone https://github.com/GiveHeartToU/Perturb-Audit.git
 cd perturb-audit
 
 conda env create -f environment_analysis.yml
